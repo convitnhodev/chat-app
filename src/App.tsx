@@ -1,6 +1,6 @@
 
 import './App.css'
-import DashboardLayout from './layouts/dashboard/index';
+import DashboardLayout from "./layouts/dashboard/index";
 
 function App() {
 
