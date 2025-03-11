@@ -57,3 +57,42 @@ docker logs mongodb
 ## Connection String
 
 Use this connection string in your applications:
+
+## Test Connection
+
+### Using Python Motor (Async)
+
+1. First, ensure you have the required dependencies:
+```bash
+pip install motor pymongo
+```
+
+2. The connection test is implemented in `app/db/session.py`:
+```python
+from motor.motor_asyncio import AsyncIOMotorClient
+import asyncio
+
+from app.core.config import settings
+
+client = AsyncIOMotorClient(settings.DATABASE_URL)
+database = client.get_database(settings.DATABASE_NAME)
+
+async def test_connection():
+    try:
+        collections = await database.list_collection_names()
+        print("Successfully connected to MongoDB!")
+        print(f"Available collections: {collections}")
+        print(f"Database name: {settings.DATABASE_NAME}")
+        return True
+    except Exception as e:
+        print(f"Failed to connect to MongoDB: {str(e)}")
+        return False
+```
+
+3. Run the test:
+```bash
+# From project root directory
+python -m app.db.session
+```
+
+If the connection is successful, you should see output similar to:
