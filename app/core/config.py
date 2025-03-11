@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     PROJECT_DESCRIPTION: str = "FastAPI Project with proper configuration"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    DATABASE_URL: str = "mongodb://localhost:27017"
+    DATABASE_NAME: str = "my_database"
     class Config:
         env_file = ".env" 
         case_sensitive = True
