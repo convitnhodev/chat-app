@@ -1,5 +1,10 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.routers.base import api_router
+
+def include_router(app):
+    app.include_router(api_router)
 
 def start_application():
     app = FastAPI(
@@ -7,6 +12,17 @@ def start_application():
         version=settings.PROJECT_VERSION,
         description=settings.PROJECT_DESCRIPTION
     )
+    origins = ["http://localhost:5173"]  # Replace with the origin(s) of your frontend
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+
+    include_router(app)
     return app
 
 app = start_application()
@@ -33,4 +49,8 @@ def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app, 
+        host=settings.HOST, 
+        port=settings.PORT
+    )
