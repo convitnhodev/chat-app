@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
     DATABASE_URL: str = "mongodb://localhost:27017"
     DATABASE_NAME: str = "my_database"
+    ACCESS_TOKEN_EXPIRATION_EXPIRE: int = 30
     class Config:
         env_file = ".env" 
         case_sensitive = True
