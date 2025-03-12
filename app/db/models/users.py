@@ -2,44 +2,23 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from pydantic import EmailStr, Field, BaseModel, ConfigDict
 
-
-class UserAccess(BaseModel): 
-    anon: int = 0 
-    auth: int = 47 
-
-
-class UserPhoto(BaseModel):
-    data: bytes
-    type: str = Field(..., pattern="^(jpg|jpeg|png|gif)$")  # Validate image types
-
-
-class UserPublic(BaseModel):
-    fn: str = Field(..., min_length=1, max_length=100)  # Add length validation
-    photo: Optional[UserPhoto] = None
-
-
 class User(BaseModel):
     model_config = ConfigDict(
-        populate_by_name=True,  # Allow population by alias
-        json_encoders={bytes: lambda v: v.hex()},  # Convert bytes to hex string
-        from_attributes=True  # Allow ORM mode
+        populate_by_name=True, 
+        json_encoders={bytes: lambda v: v.hex()},  
+        from_attributes=True 
     )
 
     id: str = Field(default=None, alias="_id")
-    access: UserAccess = Field(default_factory=UserAccess)
-    createdat: datetime = Field(default_factory=datetime.utcnow)
-    updatedat: datetime = Field(default_factory=datetime.utcnow)
-    lastseen: datetime = Field(default_factory=datetime.utcnow)
-    stateat: Optional[datetime] = None
+    username: str = Field(..., min_length=1, max_length=100)  
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    password: str = Field(..., min_length=8, max_length=100)
 
-    state: int = Field(default=0, ge=0, le=2)  # Add value validation
-
-    devices: Optional[Dict[str, Any]] = None
-    useragent: Optional[str] = None
-
-    public: UserPublic
-
-    tags: List[str] = Field(default_factory=list)
+   
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+   
 
     @property
     def email(self) -> Optional[str]:
@@ -57,22 +36,10 @@ class User(BaseModel):
                 return tag[4:]
         return None
 
-    def update_lastseen(self):
-        """Update last seen timestamp"""
-        self.lastseen = datetime.utcnow()
-        self.updatedat = self.lastseen
+   
+    
 
-    @classmethod
-    def create_new(cls, email: str, full_name: str) -> "User":
-        """Factory method to create a new user"""
-        now = datetime.utcnow()
-        return cls(
-            createdat=now,
-            updatedat=now,
-            lastseen=now,
-            public=UserPublic(fn=full_name),
-            tags=[f"email:{email}"]
-        )
+  
 
 
 
