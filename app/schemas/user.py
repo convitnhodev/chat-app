@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=6)
-    full_name: Optional[str] = None
+    name: Optional[str] = None
     phone: str
     address: str
     dob: str
@@ -27,7 +27,7 @@ class User(BaseModel):
     username: str
     email: EmailStr
     hashed_password: str
-    full_name: Optional[str] = None
+    name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
     dob: Optional[str] = None
@@ -43,7 +43,7 @@ class UserResponse(BaseModel):
     id: str = Field(..., alias="_id")
     username: str
     email: EmailStr
-    full_name: Optional[str] = None
+    name: Optional[str] = None
     phone: str
     address: str
     dob: datetime

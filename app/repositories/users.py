@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -11,6 +11,13 @@ class UserRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
         self.collection = db.users
+    def _format_dob(self, dob: Union[str, datetime, None]) -> Optional[str]:
+        """Format DOB to string consistently"""
+        if dob is None:
+            return None
+        if isinstance(dob, datetime):
+            return dob.strftime("%d/%m/%Y")
+        return dob
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
@@ -42,12 +49,13 @@ class UserRepository:
 
             # Create user document
             now = datetime.utcnow()
+           
             user_dict = {
                 "_id": str(ObjectId()),
                 "username": user.username,
                 "email": user.email,
                 "hashed_password": self.get_password_hash(user.password),
-                "full_name": user.full_name,
+                "name": user.name,
                 "phone": user.phone,
                 "address": user.address,
                 "dob": user.dob,

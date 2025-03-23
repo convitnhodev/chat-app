@@ -1,12 +1,12 @@
-from datetime import datetime, date
+from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import EmailStr, Field, BaseModel, ConfigDict, validator
+from pydantic import EmailStr, Field, BaseModel, ConfigDict
 
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=6)
-    full_name: Optional[str] = None
+    name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
     dob: Optional[str] = None  # Optional date of birth
@@ -17,7 +17,8 @@ class UserCreate(BaseModel):
         if v is None:
             return None
         try:
-            return datetime.strptime(v, "%d/%m/%Y").date()
+            datetime.strptime(v, "%d/%m/%Y")
+            return v
         except ValueError:
             raise ValueError("Date must be in format DD/MM/YYYY")
 
@@ -26,10 +27,10 @@ class User(BaseModel):
     username: str
     email: EmailStr
     hashed_password: str
-    full_name: Optional[str] = None
+    name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
-    dob: Optional[date] = None
+    dob: Optional[str] = None
     role: str = Field(default="user")
     disabled: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -45,7 +46,7 @@ class UserResponse(BaseModel):
     id: str = Field(..., alias="_id")
     username: str
     email: EmailStr
-    full_name: Optional[str] = None
+    name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
     dob: Optional[date] = None
