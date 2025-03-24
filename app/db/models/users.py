@@ -1,18 +1,21 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import EmailStr, Field, BaseModel, ConfigDict
+from pydantic import EmailStr, Field, BaseModel, ConfigDict, field_validator
+from datetime import date
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
-    password: str = Field(..., min_length=6)
     name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
-    dob: Optional[str] = None  # Optional date of birth
     role: str = Field(default="user")
 
-    @validator('dob')
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=6)
+    dob: Optional[str] = None
+
+    @field_validator('dob')
     def validate_dob(cls, v):
         if v is None:
             return None
@@ -22,19 +25,21 @@ class UserCreate(BaseModel):
         except ValueError:
             raise ValueError("Date must be in format DD/MM/YYYY")
 
-class User(BaseModel):
+class User(UserBase):
     id: str = Field(default=None, alias="_id")
-    username: str
-    email: EmailStr
     hashed_password: str
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
     dob: Optional[str] = None
-    role: str = Field(default="user")
-    disabled: bool = False
+    disabled: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @field_validator('dob')
+    def validate_dob(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return v.strftime("%d/%m/%Y")
+        return v
 
     class Config:
         populate_by_name = True
@@ -49,11 +54,12 @@ class UserResponse(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
-    dob: Optional[date] = None
+    dob: Optional[str] = None
     role: str
     created_at: datetime
 
     class Config:
+        from_attributes = True
         populate_by_name = True
         json_encoders = {
             date: lambda v: v.strftime("%d/%m/%Y") if v else None

@@ -2,15 +2,16 @@ from datetime import datetime
 from typing import Optional, Union
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
-
+from fastapi import Depends
 from app.schemas.user import User, UserCreate
-from passlib.context import CryptContext
+from app.core.hashing import Hasher
+from app.db.session import get_db
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class UserRepository:
-    def __init__(self, db: AsyncIOMotorDatabase):
+    def __init__(self, db: AsyncIOMotorDatabase = Depends(get_db)) -> None:
         self.db = db
         self.collection = db.users
+
     def _format_dob(self, dob: Union[str, datetime, None]) -> Optional[str]:
         """Format DOB to string consistently"""
         if dob is None:
@@ -18,12 +19,8 @@ class UserRepository:
         if isinstance(dob, datetime):
             return dob.strftime("%d/%m/%Y")
         return dob
-
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        return pwd_context.verify(plain_password, hashed_password)
     
-    def get_password_hash(self, password: str) -> str:
-        return pwd_context.hash(password)
+   
     
     async def get_user_by_username(self, username: str) -> Optional[User]:
         if user_doc := await self.collection.find_one({"username": username}):
@@ -54,7 +51,7 @@ class UserRepository:
                 "_id": str(ObjectId()),
                 "username": user.username,
                 "email": user.email,
-                "hashed_password": self.get_password_hash(user.password),
+                "hashed_password": user.password,
                 "name": user.name,
                 "phone": user.phone,
                 "address": user.address,
