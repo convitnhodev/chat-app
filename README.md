@@ -96,3 +96,29 @@ python -m app.db.session
 ```
 
 If the connection is successful, you should see output similar to:
+
+
+### Running the Application
+
+You can run the application using one of the following commands:
+
+#### Development mode (with auto-reload)
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### Production mode
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+Command options explained:
+- `app.main:app` - Path to your FastAPI application instance
+- `--reload` - Enable auto-reload on code changes (development only)
+- `--host 0.0.0.0` - Make server accessible from external machines
+- `--port 8000` - Run server on port 8000
+
+The API will be available at:
+- API: http://localhost:8000
+- Documentation: http://localhost:8000/docs
+- Alternative documentation: http://localhost:8000/redoc
