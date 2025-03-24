@@ -1,10 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.routers.base import api_router
+from app.socket.routes import ws_router
+from app.socket.websocket_test import ws_test_router
 
 def include_router(app):
     app.include_router(api_router)
+    app.include_router(ws_router)
+    app.include_router(ws_test_router, tags=["WebSocket Test"])
 
 def start_application():
     app = FastAPI(
@@ -20,6 +25,9 @@ def start_application():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Mount templates directory
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
     include_router(app)
     return app

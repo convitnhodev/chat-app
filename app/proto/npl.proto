@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package nlp.v1;
+
+service NLPService {
+    rpc Analyze (NLPRequest) returns (NLPResponse);
+}
+
+message NLPRequest {
+    string message = 1;
+}
+
+message NLPResponse {
+    string response = 1;
+}

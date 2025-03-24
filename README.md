@@ -122,3 +122,21 @@ The API will be available at:
 - API: http://localhost:8000
 - Documentation: http://localhost:8000/docs
 - Alternative documentation: http://localhost:8000/redoc
+
+
+### Generate gRPC Code
+Navigate to the proto directory and run buf generate:
+```bash
+cd app/proto
+buf generate
+```
+
+## Testing WebSocket
+
+1. Visit the WebSocket test interface:
+   - Open your browser and navigate to: `http://localhost:8000/ws-test`
+   - Use the interactive interface to test WebSocket connections
+
+2. Available WebSocket endpoints:
+   - Anonymous connection: `ws://localhost:8000/ws`
+   - Named connection: `ws://localhost:8000/ws/{client_id}`
