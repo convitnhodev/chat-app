@@ -34,11 +34,31 @@
         button:hover {
             background-color: #45a049;
         }
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .auth-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
     <h2>WebSocket Test Client</h2>
     
+    <div class="auth-section">
+        <div class="input-group">
+            <input type="text" id="token" placeholder="Enter JWT token">
+            <select id="authMethod">
+                <option value="query">Query Parameter</option>
+                <option value="header">Authorization Header</option>
+            </select>
+        </div>
+    </div>
+
     <div class="input-group">
         <input type="text" id="clientId" placeholder="Enter client ID (optional)">
         <button onclick="connect()">Connect</button>
@@ -65,48 +85,71 @@
         }
 
         function connect() {
+            const token = document.getElementById('token').value.trim();
+            const authMethod = document.getElementById('authMethod').value;
             const clientId = document.getElementById('clientId').value.trim();
-            const url = clientId ? 
+
+            if (!token) {
+                addMessage('Token is required', 'error');
+                return;
+            }
+
+            let baseUrl = clientId ? 
                 `ws://${window.location.host}/ws/${clientId}` : 
                 `ws://${window.location.host}/ws`;
+
+            // Add token based on selected method
+            const url = authMethod === 'query' ? 
+                `${baseUrl}?token=${encodeURIComponent(token)}` : 
+                baseUrl;
 
             ws = new WebSocket(url);
             
             ws.onopen = function() {
+                if (authMethod === 'header') {
+                    // Send authorization header as a message
+                    ws.send(JSON.stringify({
+                        type: 'authorization',
+                        token: `Bearer ${token}`
+                    }));
+                }
                 addMessage('Connected to WebSocket', 'received');
-                document.getElementById('messageInput').disabled = false;
-                document.getElementById('sendBtn').disabled = false;
-                document.getElementById('disconnectBtn').disabled = false;
-                document.getElementById('clientId').disabled = true;
+                enableControls(true);
             };
             
             ws.onmessage = function(event) {
                 addMessage(event.data, 'received');
             };
             
-            ws.onclose = function() {
-                addMessage('Disconnected from WebSocket', 'error');
-                resetControls();
+            ws.onclose = function(event) {
+                addMessage(`Disconnected: ${event.reason || 'Connection closed'}`, 'error');
+                enableControls(false);
             };
 
             ws.onerror = function(error) {
                 addMessage('WebSocket Error: ' + error.message, 'error');
-                resetControls();
+                enableControls(false);
             };
+        }
+
+        function enableControls(enabled) {
+            document.getElementById('messageInput').disabled = !enabled;
+            document.getElementById('sendBtn').disabled = !enabled;
+            document.getElementById('disconnectBtn').disabled = !enabled;
+            document.getElementById('clientId').disabled = enabled;
+            document.getElementById('token').disabled = enabled;
+            document.getElementById('authMethod').disabled = enabled;
         }
 
         function disconnect() {
             if (ws) {
                 ws.close();
-                resetControls();
+                enableControls(false);
             }
         }
 
         function resetControls() {
-            document.getElementById('messageInput').disabled = true;
-            document.getElementById('sendBtn').disabled = true;
-            document.getElementById('disconnectBtn').disabled = true;
-            document.getElementById('clientId').disabled = false;
+            enableControls(false);
             ws = null;
         }
         
